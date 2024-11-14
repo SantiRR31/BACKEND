@@ -1,19 +1,16 @@
-const productosBD = require("./conexion").productos; // Asumiendo que tienes una colección de productos
-const Producto = require("../modelos/ProductoModelo"); // Importa el modelo de Producto
+const { productos } = require("./conexion");
+const productosBD = require("./conexion").productos;
+const Producto = require("../modelos/ProductoModelo");
 
 // Función para validar datos del producto
 function validarDatos(producto) {
-    var valido = false;
-    if (producto.nombre !== undefined && producto.precio !== undefined && producto.cantidad !== undefined) {
-        valido = true;
-    }
-    return valido;
+    return producto.nombre !== undefined && producto.precio !== undefined && producto.cantidad !== undefined;
 }
 
 // Mostrar todos los productos
 async function mostrarProductos() {
     const productos = await productosBD.get();
-    var productosValidos = [];
+    let productosValidos = [];
     productos.forEach(producto => {
         const producto1 = new Producto({ id: producto.id, ...producto.data() });
         if (validarDatos(producto1.getProducto)) {
@@ -27,38 +24,62 @@ async function mostrarProductos() {
 async function busXId(id) {
     const producto = await productosBD.doc(id).get();
     const producto1 = new Producto({ id: producto.id, ...producto.data() });
-    var productoValido;
     if (validarDatos(producto1.getProducto)) {
-        productoValido = producto1.getProducto;
+        return producto1.getProducto;
     }
-    return productoValido;
+    return null;
+}
+
+// Función para buscar producto por nombre
+async function busXNombreProducto(nombreProducto) {
+    if (!nombreProducto || nombreProducto.trim() === "") {
+        throw new Error('El nombre del producto no puede ser vacío'); // Verificación para nombre vacío
+    }
+    const querySnapshot = await productos.where("nombre", "==", nombreProducto).get();
+    if (!querySnapshot.empty) {
+        return querySnapshot.docs[0].data(); // Retorna el primer producto que coincide
+    }
+    return null;
 }
 
 // Crear un nuevo producto
 async function newProd(data) {
     const producto1 = new Producto(data);
-    var productoValido = false;
     if (validarDatos(producto1.getProducto)) {
         await productosBD.doc().set(producto1.getProducto);
-        productoValido = true;
+        return true;
     }
-    return productoValido;
+    return false;
 }
 
 // Borrar producto por ID
 async function deleteProd(id) {
-    var productoValido = await busXId(id);
-    var productoBorrado = false;
+    const productoValido = await busXId(id);
     if (productoValido) {
         await productosBD.doc(id).delete();
-        productoBorrado = true;
+        return true;
     }
-    return productoBorrado;
+    return false;
+}
+
+// Editar producto por ID
+async function editarProd(id, data) {
+    const productoExistente = await busXId(id);
+    if (productoExistente) {
+        const productoNuevo = new Producto(data);
+        if (validarDatos(productoNuevo.getProducto)) {
+            await productosBD.doc(id).update(productoNuevo.getProducto);
+            return true;
+        }
+    }
+    return false;
 }
 
 module.exports = {
     mostrarProductos,
     busXId,
     deleteProd,
-    newProd
+    newProd,
+    editarProd,
+    busXNombreProducto
 };

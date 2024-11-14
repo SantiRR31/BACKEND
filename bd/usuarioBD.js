@@ -1,84 +1,114 @@
 const usuariosBD = require("./conexion").usuarios;
 const Usuario = require("../modelos/UsuarioModelo");
-const {encryptPass, validarPass, usuarioAuto, adminAuto}= require("../middlewares/funcionesPass")
+const { usuarios } = require("./conexion");
+const { encryptPass, validarPass } = require("../middlewares/funcionesPass");
 
-function validarDatos(usuario){
-    var valido=false;
-    if(usuario.nombre!=undefined && usuario.usuario!=undefined && usuario.password!=undefined){
-        valido=true;
-    }
-    return valido;
+function validarDatos(usuario) {
+    return usuario.nombre !== undefined && usuario.usuario !== undefined && usuario.password !== undefined;
 }
 
-async function mostrarUsuarios(){
+async function login(req, usuario, password) {
+    const usuariosCorrectos = await usuariosBD.where("usuario", "==", usuario).get();
+    let user = {
+        usuario: "anonimo",
+        tipoUsuario: "sin acceso"
+    };
+
+    usuariosCorrectos.forEach(usu => {
+        const usuarioCorrecto = validarPass(password, usu.data().password, usu.data().salt);
+        if (usuarioCorrecto) {
+            user.usuario = usu.data().usuario;
+            if (usu.data().tipoUsuario === "usuario") {
+                req.session.usuario = req.session.usuario;
+                user.tipoUsuario = "usuario";
+            } else if (usu.data().tipoUsuario === "admin") {
+                req.session.admin = "admin";
+                user.tipoUsuario = req.session.admin;
+            }
+        }
+    });
+    return user;
+}
+
+async function mostrarUsuarios() {
     const usuarios = await usuariosBD.get();
-    //console.log(usuarios);
-    usuariosValidos=[];
+    let usuariosValidos = [];
     usuarios.forEach(usuario => {
-        const usuario1=new Usuario({id:usuario.id, ...usuario.data()});
-        if(validarDatos(usuario1.getUsuario)){
+        const usuario1 = new Usuario({ id: usuario.id, ...usuario.data() });
+        if (validarDatos(usuario1.getUsuario)) {
             usuariosValidos.push(usuario1.getUsuario);
         }
     });
-    //console.log(usuariosValidos);
     return usuariosValidos;
 }
 
-async function busXId(id){
-    const usuario=await usuariosBD.doc(id).get();
-    const usuario1=new Usuario({id:usuario.id, ...usuario.data()});
-    var usuarioValido;
-    if (validarDatos(usuario1.getUsuario)){
-        usuarioValido=usuario1.getUsuario;
+async function busXId(id) {
+    const usuario = await usuariosBD.doc(id).get();
+    const usuario1 = new Usuario({ id: usuario.id, ...usuario.data() });
+    if (validarDatos(usuario1.getUsuario)) {
+        return usuario1.getUsuario;
     }
-    //console.log(usuarioValido);
-    return usuarioValido;
+    return null;
+}
+
+async function busXNombreUsuario(nombreUsuario) {
+    const querySnapshot = await usuarios.where("nombre", "==", nombreUsuario).get();
+    if (!querySnapshot.empty) {
+        return querySnapshot.docs[0].data();
+    }
+    throw new Error('Usuario no encontrado');
 }
 
 async function newUser(data) {
-    const {salt,hash}=encryptPass(data.password);
-    data.password=hash;
-    data.salt=salt;
-    data.tipoUsuario="usuario";
-    const usuario1=new Usuario(data);
-    //console.log(usuario1.getUsuario);
-    var usuarioValido=false;
-    if (validarDatos(usuario1.getUsuario)){
+    const { salt, hash } = encryptPass(data.password);
+    data.password = hash;
+    data.salt = salt;
+    data.tipoUsuario = "usuario";
+    const usuario1 = new Usuario(data);
+    if (validarDatos(usuario1.getUsuario)) {
         await usuariosBD.doc().set(usuario1.getUsuario);
-        usuarioValido=true;
+        return true;
     }
-    return usuarioValido;
+    return false;
 }
 
 async function deleteUser(id) {
-    var usuarioValido=await busXId(id);
-    var usuarioBorrado=false;
-    if(usuarioValido){
+    const usuarioValido = await busXId(id);
+    if (usuarioValido) {
         await usuariosBD.doc(id).delete();
-        usuarioBorrado=true;
+        return true;
     }
-    return usuarioBorrado;
+    return false;
 }
 
-module.exports={
+async function editUser(id, newData) {
+    const usuarioExistente = await busXId(id);
+    if (usuarioExistente) {
+        const usuarioActualizado = {};
+        if (newData.nombre !== undefined) {
+            usuarioActualizado.nombre = newData.nombre;
+        }
+        if (newData.usuario !== undefined) {
+            usuarioActualizado.usuario = newData.usuario;
+        }
+        if (newData.password !== undefined) {
+            usuarioActualizado.password = newData.password;
+        }
+
+        if (Object.keys(usuarioActualizado).length > 0) {
+            await usuariosBD.doc(id).update(usuarioActualizado);
+            return true;
+        }
+    }
+    return false;
+}
+
+module.exports = {
     mostrarUsuarios,
     busXId,
     deleteUser,
-    newUser
-}
-
-//deleteUser("100");
-
-/*data={
-    nombre:"Juana Martinez",
-    usuario:"abc",
-    password:"abc"
-}
-
-async function prueba() {
-    console.log(await newUser(data));
-}
-
-prueba();*/
-//busXId("300");
-//mostrarUsuarios();
+    newUser,
+    editUser,
+    login,
+    busXNombreUsuario
+};

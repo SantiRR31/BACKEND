@@ -1,41 +1,41 @@
 class Producto {
     constructor(data) {
-        this.id = data.id;             // ID del producto
-        this.nombre = data.nombre;     // Nombre del producto
-        this.precio = data.precio;     // Precio del producto (string)
-        this.cantidad = data.cantidad; // Cantidad del producto (string)
+        this.id = data.id;             
+        this.nombre = data.nombre;     
+        this.precio = data.precio;     
+        this.cantidad = data.cantidad; 
     }
 
     set id(id) {
-        this._id = id; // Almacena el ID del producto
+        this._id = id; 
     }
 
     set nombre(nombre) {
-        this._nombre = nombre; // Almacena el nombre
+        this._nombre = nombre; 
     }
 
     set precio(precio) {
-        this._precio = precio; // Almacena el precio
+        this._precio = precio; 
     }
 
     set cantidad(cantidad) {
-        this._cantidad = cantidad; // Almacena la cantidad
+        this._cantidad = cantidad; 
     }
 
     get id() {
-        return this._id; // Retorna el ID del producto
+        return this._id; 
     }
 
     get nombre() {
-        return this._nombre; // Retorna el nombre del producto
+        return this._nombre; 
     }
 
     get precio() {
-        return this._precio; // Retorna el precio del producto
+        return this._precio; 
     }
 
     get cantidad() {
-        return this._cantidad; // Retorna la cantidad del producto
+        return this._cantidad;
     }
 
     get getProducto() {
@@ -51,11 +51,11 @@ class Producto {
             cantidad: this.cantidad,
         };
         if (this.id === undefined) {
-            return sinid; // Retorna el producto sin ID
+            return sinid; 
         } else {
-            return conid; // Retorna el producto con ID
+            return conid; 
         }
     }
 }
 
-module.exports = Producto; // Exporta la clase Producto
+module.exports = Producto;

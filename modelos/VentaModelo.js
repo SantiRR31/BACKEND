@@ -1,59 +1,59 @@
 class Venta {
     constructor(data) {
-        this.id = data.id;               // ID de la venta
-        this.idUsuario = data.idUsuario;  // ID del usuario
-        this.idProducto = data.idProducto; // ID del producto
-        this.fec_hora = data.fec_hora;    // Fecha y hora de la venta
-        this.cantidad = data.cantidad;     // Cantidad del producto
-        this.estado = data.estado || 'pendiente'; // Estado de la venta, por defecto 'pendiente'
+        this.id = data.id;              
+        this.idUsuario = data.idUsuario;  
+        this.idProducto = data.idProducto;
+        this.fec_hora = data.fec_hora;    
+        this.cantidad = data.cantidad;     
+        this.estado = data.estado; 
     }
 
     set id(id) {
-        this._id = id; // Almacena el ID de la venta
+        this._id = id; 
     }
 
     set idUsuario(idUsuario) {
-        this._idUsuario = idUsuario; // Almacena el ID del usuario
+        this._idUsuario = idUsuario; 
     }
 
     set idProducto(idProducto) {
-        this._idProducto = idProducto; // Almacena el ID del producto
+        this._idProducto = idProducto;
     }
 
     set fec_hora(fec_hora) {
-        this._fec_hora = fec_hora; // Almacena la fecha y hora
+        this._fec_hora = fec_hora; 
     }
 
     set cantidad(cantidad) {
-        this._cantidad = cantidad; // Almacena la cantidad del producto
+        this._cantidad = cantidad; 
     }
 
     set estado(estado) {
-        this._estado = estado; // Almacena el estado de la venta
+        this._estado = estado; 
     }
 
     get id() {
-        return this._id; // Retorna el ID de la venta
+        return this._id; 
     }
 
     get idUsuario() {
-        return this._idUsuario; // Retorna el ID del usuario
+        return this._idUsuario;
     }
 
     get idProducto() {
-        return this._idProducto; // Retorna el ID del producto
+        return this._idProducto; 
     }
 
     get fec_hora() {
-        return this._fec_hora; // Retorna la fecha y hora de la venta
+        return this._fec_hora; 
     }
 
     get cantidad() {
-        return this._cantidad; // Retorna la cantidad del producto
+        return this._cantidad; 
     }
 
     get estado() {
-        return this._estado; // Retorna el estado de la venta
+        return this._estado;
     }
 
     get getVenta() {
@@ -63,21 +63,20 @@ class Venta {
             idProducto: this.idProducto,
             fec_hora: this.fec_hora,
             cantidad: this.cantidad,
-            estado: this.estado // Incluye el estado en la representación de la venta
+            estado: this.estado 
         };
         const sinid = {
             idUsuario: this.idUsuario,
             idProducto: this.idProducto,
             fec_hora: this.fec_hora,
             cantidad: this.cantidad,
-            estado: this.estado // Incluye el estado en la representación de la venta
+            estado: this.estado 
         };
         if (this.id === undefined) {
-            return sinid; // Retorna la venta sin ID
+            return sinid; 
         } else {
-            return conid; // Retorna la venta con ID
+            return conid; 
         }
     }
 }
-
-module.exports = Venta; // Exporta la clase Venta
+module.exports = Venta; 
